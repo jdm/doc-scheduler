@@ -35,8 +35,7 @@ function calcPrevMonth(date) {
 
 function prevMonth() {
     currentDate = calcPrevMonth(currentDate);
-    rebuildCalendar(currentDate, [], []);
-    createSchedule();
+    doRebuild();
 }
 
 function nextMonth() {
@@ -49,12 +48,11 @@ function nextMonth() {
         year += 1;
     }
     currentDate = new Date(year, month, 1);
-    rebuildCalendar(currentDate, [], []);
-    createSchedule();
+    doRebuild();
 }
 
-function rebuildCalendar(date, shifts, docs) {
-    //console.log(shifts, docs);
+function rebuildCalendar(date, shifts, docs, active) {
+    console.log(shifts, docs);
     const year = date.getFullYear();
     const month = date.getMonth();
     const startDate = new Date(year, month, 1);
@@ -66,120 +64,187 @@ function rebuildCalendar(date, shifts, docs) {
     days.innerHTML = "";
 
     const prevMonth = calcPrevMonth(currentDate).getMonth();
-    for (i = 0; i < startDay; i++) {
-        const day = document.createElement("li");
-        day.innerText = daysInMonth(prevMonth, year) - startDay + i + 1;
+    for (let i = 0; i < startDay; i++) {
+        const day = document.createElement("div");
+        day.className = "disabled";
+        day.innerHTML = `${daysInMonth(prevMonth, year) - startDay + i + 1}<br>&nbsp;<br>&nbsp;<br>`;
         days.appendChild(day);
     }
 
-    for (i = 0; i < daysInMonth(month, year); i++) {
-        const day = document.createElement("li");
-        const dayShifts = shifts.length > i ? shifts[i].map(id => id !== null ? docs[id] : null) : [null, null];
-        const firstClass = dayShifts[0] ? "filled" : "unfilled";
-        const secondClass = dayShifts[1] ? "filled" : "unfilled";
-        const firstShift = dayShifts[0] || "&lt;unfilled&gt;";
-        const secondShift = dayShifts[1] || "&lt;unfilled&gt;";
-        day.innerHTML = `${i + 1}<br><span class="${firstClass}">${firstShift}</span><br><span class="${secondClass}">${secondShift}</span>`;
+    for (let i = 0; i < daysInMonth(month, year); i++) {
+        const day = document.createElement("div");
+        day.classList.add("day");
+        const currentDay = i;
+        if (active !== null) {
+            if (calendarState === INPUT_CONSTRAINTS) {
+                day.onclick = () => markDay(currentDay);
+                if (active["preferred"].indexOf(currentDay) !== -1) {
+                    day.classList.add("preferred");
+                }
+                if (active["unavailable"].indexOf(currentDay) !== -1) {
+                    day.classList.add("unavailable");
+                }
+            } else if (shifts) {
+                const activeId = docs.indexOf(active["name"]);
+                if (shifts[i].indexOf(activeId) !== -1) {
+                    day.classList.add("highlight");
+                }
+            }
+        }
+        const dayShifts = shifts !== null && shifts.length > i ? shifts[i].map(id => id !== null ? docs[id] : null) : ["&nbsp;", "&nbsp;"];
+        const firstClass = dayShifts[0] !== null ? "filled" : "unfilled";
+        const secondClass = dayShifts[1] !== null ? "filled" : "unfilled";
+        const firstShift = dayShifts[0] !== null ? dayShifts[0] : "&lt;unfilled&gt;";
+        const secondShift = dayShifts[1] !== null ? dayShifts[1] : "&lt;unfilled&gt;";
+        day.innerHTML = `<span>${i + 1}</span><br><span class="${firstClass}">${firstShift}</span><br><span class="${secondClass}">${secondShift}</span>`;
         days.appendChild(day);
     }
 }
 
-rebuildCalendar(currentDate, [], []);
-
-const body = [
+let docs = [
     {
         "name": "Bowman",
         "preferred": [
-            1,
-            8,
-            15,
-            22,
-            30,
+            1,5,7,9
         ],
-        "unavailable": [
-            2,
-            9,
-            16,
-            23
-        ],
-        "min": 0,
-        "max": 4
-    },
-    {
-        "name": "Curtis",
-        "preferred": [
-            3,
-            4,
-            10,
-            11,
-            17,
-            18,
-            24,
-            25,
-        ],
-        "unavailable": [],
-        "min": 4,
-        "max": 6
+        "unavailable": [13],
+        "min": 1,
+        "max": 4,
     },
     {
         "name": "McArthur",
-        "preferred": [
-        ],
-        "unavailable": [],
-        "min": 0,
-        "max": 8
-    },
-    {
-        "name": "Hubbs",
-        "preferred": [
-        ],
-        "unavailable": [],
-        "min": 3,
-        "max": 7
+        "preferred": [11,20],
+        "unavailable": [23],
+        "min": 4,
+        "max": 12,
     },
     {
         "name": "AlQaseer",
-        "preferred": [
-        ],
-        "unavailable": [],
-        "min": 4,
-        "max": 8
-    },
-    {
-        "name": "Doan",
-        "preferred": [
-        ],
-        "unavailable": [],
+        "preferred": [30],
+        "unavailable": [8],
         "min": 2,
-        "max": 5
-    },
-    {
-        "name": "Gill",
-        "preferred": [
-        ],
-        "unavailable": [],
-        "min": 4,
-        "max": 6,
-    },
-    {
-        "name": "Scheuerman",
-        "preferred": [],
-        "unavailable": [],
-        "min": 4,
-        "max": 6,
+        "max": 20,
     }
 ];
+let currentDoc = null;
+
+function addDoc() {
+    const input = document.querySelector("#docName");
+    docs.push({
+        "name": input.value,
+        "unavailable": [],
+        "preferred": [],
+        "min": 4,
+        "max": 8,
+    });
+    input.value = "";
+    rebuildDocs();
+}
+
+function rebuildDocs() {
+    const names = document.querySelector("#docNames");
+    names.innerHTML = "";
+    for (const doc of docs) {
+        const docElem = document.createElement("div");
+        docElem.className = "doc";
+        docElem.onclick = markActiveDoc; 
+        docElem.textContent = doc["name"];
+        const minElem = document.createElement("input");
+        minElem.type = "number";
+        minElem.value = doc["min"];
+        minElem.size = 3;
+        minElem.onchange = (ev) => updateMinMax("min", ev);
+        const maxElem = document.createElement("input");
+        maxElem.type = "number";
+        maxElem.value = doc["max"];
+        maxElem.size = 3;
+        maxElem.onchange = (ev) => updateMinMax("max", ev);
+        docElem.appendChild(minElem);
+        docElem.appendChild(maxElem);
+        names.appendChild(docElem);
+    }
+}
+
+function updateMinMax(prop, event) {
+    //event.stopPropagation();
+    //event.preventDefault();
+    const docList = document.querySelector("#docNames");
+    const parent = event.target.parentNode;
+    let doc = docList.querySelector("div");
+    let i = 0;
+    while (doc) {
+        if (doc === parent) {
+            break;
+        }
+        i++;
+        doc = doc.nextElementSibling;
+    }
+    docs[i][prop] = parseInt(event.target.value);
+    rebuildDocs();
+}
+
+function markActiveDoc(ev) {
+    const names = document.querySelector("#docNames");
+    let i = 0;
+    let doc = names.querySelector("div");
+    const lastCurrent = currentDoc;
+    currentDoc = null;
+    while (doc) {
+        if (ev !== null && doc === ev.target && lastCurrent != i) {
+            currentDoc = i;
+            doc.classList.add("active");
+        } else {
+            doc.classList.remove("active");
+        }
+        i++;
+        doc = doc.nextSibling;
+    }
+    doRebuild();
+}
+
+function markDay(day) {
+    if (currentDoc == null || calendarState != INPUT_CONSTRAINTS) {
+        return;
+    }
+    const doc = docs[currentDoc];
+    if (doc["preferred"].indexOf(day) !== -1) {
+        doc["preferred"] = doc["preferred"].filter(d => d != day);
+        doc["unavailable"].push(day);
+    } else if (doc["unavailable"].indexOf(day) !== -1) {
+        doc["unavailable"] = doc["unavailable"].filter(d => d != day);
+    } else {
+        doc["preferred"].push(day);
+    }
+    doRebuild();
+}
+
+const INPUT_CONSTRAINTS = 0;
+const SHOW_SCHEDULE = 1;
+let calendarState = INPUT_CONSTRAINTS;
+let schedule = null;
+
+function doRebuild() {
+    rebuildCalendar(currentDate, schedule, docs.map(doc => doc["name"]), currentDoc !== null ? docs[currentDoc] : null);
+}
+
+doRebuild();
+rebuildDocs();
+
 function createSchedule() {
+    markActiveDoc(null);
+
     const days = daysInMonth(currentDate.getMonth(), currentDate.getYear());
     fetch(`cgi-bin/solve-cgi.py?days=${days}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(docs),
     }).then(response => response.json())
-        .then(data => rebuildCalendar(currentDate, data, body.map(doc => doc["name"])));
+        .then(data => {
+            calendarState = SHOW_SCHEDULE;
+            schedule = data;
+            rebuildCalendar(currentDate, data, docs.map(doc => doc["name"]), null)
+        });
 }
-
-createSchedule();
 

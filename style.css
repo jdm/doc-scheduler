@@ -34,6 +34,12 @@ body {font-family: Verdana, sans-serif;}
   padding-top: 10px;
 }
 
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
 /* Weekdays (Mon-Sun) */
 .weekdays {
   margin: 0;
@@ -41,24 +47,26 @@ body {font-family: Verdana, sans-serif;}
   background-color:#ddd;
 }
 
-.weekdays li {
+.weekdays div {
   display: inline-block;
-  width: 13.6%;
+  /*width: 13.6%;*/
   color: #666;
   text-align: center;
 }
 
 /* Days (1-31) */
 .days {
-  padding: 10px 0;
+  padding-top: 10px;
   background: #eee;
   margin: 0;
 }
 
-.days li {
-  list-style-type: none;
-  display: inline-block;
-  width: 13.6%;
+.days div {
+  /*list-style-type: none;*/
+  /*display: inline-block;*/
+    /*width: 13.6%;*/
+    padding-top: 0.5em;
+    user-select: none;
   text-align: center;
   margin-bottom: 15px;
   font-size:12px;
@@ -72,13 +80,91 @@ body {font-family: Verdana, sans-serif;}
 .filled {
 }
 
-.unfilled {
+div .disabled {
+    color: lightgrey;
+}
+
+.days div .unfilled {
     color: red;
 }
 
 /* Highlight the "current" day */
-.days li .active {
+.days div .active {
   padding: 5px;
   background: #1abc9c;
   color: white !important
+}
+
+.day:hover {
+    scolor: white !important;
+    cursor: pointer;
+}
+
+.day:not(.preferred,.unavailable):hover {
+    sbackground: #4acc8c;
+}
+
+div.preferred:hover {
+    sbackground-color: #66ff66 !important;
+}
+
+div.unavailable:hover {
+    sbackground-color: #9a0000;
+}
+
+#docs {
+    float: left;
+    width: 15%;
+}
+
+.doc {
+    padding: 1em 0;
+    padding-left: 0.5em;
+}
+
+.doc input {
+    margin-left: 1em;
+}
+
+.doc:hover {
+    cursor: pointer;
+    background-color: #6a6a1a;
+    color: white;
+}
+
+#docNames div.active {
+    background-color: #1aaa1a;
+    color: white;    
+}
+
+#calendar {
+    float: left;
+    width: 85%;
+}
+
+#legend {
+    padding-top: 1em;
+}
+
+#legend span {
+    vertical-align: middle;    
+}
+
+.highlight {
+    background-color: #eeee44;
+}
+
+.preferred {
+    background-color: #00de00;
+}
+
+span .preferred, span .unavailable {
+    display: inline-block;
+    width: 2em;
+    height: 2em;
+}
+
+.unavailable {
+    background-color: #4a0000;
+    color: white !important;
 }
