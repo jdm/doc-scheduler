@@ -1,0 +1,63 @@
+[
+    {
+        "name": "Bowman",
+        "preferred": [
+        ],
+        "unavailable": [
+            2,
+            9,
+            16,
+            23
+        ],
+        "min": 0,
+        "max": 4
+    },
+    {
+        "name": "Curtis",
+        "preferred": [
+            0,
+            1,
+            7,
+            8,
+            14,
+            15,
+            21,
+            22
+        ],
+        "unavailable": [],
+        "min": 4,
+        "max": 6
+    },
+    {
+        "name": "Macarthur",
+        "preferred": [
+        ],
+        "unavailable": [],
+        "min": 0,
+        "max": 8
+    },
+    {
+        "name": "Hubbs",
+        "preferred": [
+        ],
+        "unavailable": [],
+        "min": 3,
+        "max": 7
+    },
+    {
+        "name": "Alkazir",
+        "preferred": [
+        ],
+        "unavailable": [],
+        "min": 4,
+        "max": 8
+    },
+    {
+        "name": "Duan",
+        "preferred": [
+        ],
+        "unavailable": [],
+        "min": 2,
+        "max": 5
+    }
+]
