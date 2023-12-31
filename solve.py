@@ -410,7 +410,8 @@ def solve_shift_scheduling(
             desired_min, # soft min
             2, # min cost
             desired_max, # soft max
-            int(desired_max * 1.2), # hard max
+            desired_max, # hard max
+            #int(desired_max * 1.2), # hard max
             40, # max cost
             "monthly_sum_constraint(employee %i)"
             % (e),

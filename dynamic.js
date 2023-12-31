@@ -230,6 +230,36 @@ function doRebuild() {
 doRebuild();
 rebuildDocs();
 
+function validate(shifts, docs) {
+    for (const docIdx in docs) {
+        const doc = docs[docIdx];
+        let numShifts = 0;
+        let numPreferred = 0;
+        let numUnavailable = 0;
+        for (const i in shifts) {
+            const shift = shifts[i];
+            if (shift.indexOf(parseInt(docIdx)) !== -1) {
+                numShifts += 1;
+                if (doc["preferred"].indexOf(i) !== -1) {
+                    numPreferred += 1;
+                }
+                if (doc["unavailable"].indexOf(i) !== -1) {
+                    numUnavailable += 1;
+                }
+            }
+        }
+        if (numShifts < doc["min"]) {
+            console.log(`${doc["name"]} did not meet minimum shifts (${numShifts} vs. ${doc["min"]}).`);
+        }
+        if (numShifts > doc["max"]) {
+            console.log(`${doc["name"]} exceeded maximum shifts (${numShifts} vs. ${doc["max"]}).`);
+        }
+        if (numUnavailable > 0) {
+            console.log(`${doc["name"]} had ${numUnavailable} shifts scheduled on unavailable days.`);
+        }
+    }
+}
+
 function createSchedule() {
     markActiveDoc(null);
 
@@ -244,7 +274,8 @@ function createSchedule() {
         .then(data => {
             calendarState = SHOW_SCHEDULE;
             schedule = data;
-            rebuildCalendar(currentDate, data, docs.map(doc => doc["name"]), null)
-        });
+            rebuildCalendar(currentDate, data, docs.map(doc => doc["name"]), null);
+            validate(schedule, docs);
+        })
 }
 
