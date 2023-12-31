@@ -35,6 +35,7 @@ function calcPrevMonth(date) {
 
 function prevMonth() {
     currentDate = calcPrevMonth(currentDate);
+    resetState();
     doRebuild();
 }
 
@@ -48,6 +49,7 @@ function nextMonth() {
         year += 1;
     }
     currentDate = new Date(year, month, 1);
+    resetState();
     doRebuild();
 }
 
@@ -220,13 +222,19 @@ function markDay(day) {
 
 const INPUT_CONSTRAINTS = 0;
 const SHOW_SCHEDULE = 1;
-let calendarState = INPUT_CONSTRAINTS;
-let schedule = null;
+let calendarState;
+let schedule;
+
+function resetState() {
+    calendarState = INPUT_CONSTRAINTS;
+    schedule = null;
+}
 
 function doRebuild() {
     rebuildCalendar(currentDate, schedule, docs.map(doc => doc["name"]), currentDoc !== null ? docs[currentDoc] : null);
 }
 
+resetState();
 doRebuild();
 rebuildDocs();
 
