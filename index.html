@@ -15,8 +15,9 @@
     <div id="docs">
       <div id="docNames">
       </div>
-      <div><input size=13 id="docName"> <button onclick="addDoc()">+</button></div>
-      <div>
+      <div class="doc-row"><input size=13 id="docName"> <button onclick="addDoc()">+</button></div>
+      <div id="clone" class="doc-row"><button onclick="clone()">Clone from last month</button></div>      
+      <div class="doc-row">
         <button id="generate" onclick="createSchedule()">Generate</button>
         <button id="export" disabled onclick="exportSchedule()">Export</button>
       </div>

@@ -117,8 +117,7 @@ div.unavailable:hover {
 }
 
 .doc {
-    padding: 1em 0;
-    padding-left: 0.5em;
+    padding: 1em 0.5em;
 }
 
 .doc button {
@@ -252,6 +251,6 @@ span .preferred, span .unavailable {
     display: none;
 }
 
-#generate {
+.doc-row {
     margin-top: 1em;
 }

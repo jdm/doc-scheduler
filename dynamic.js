@@ -134,10 +134,14 @@ let docs = {
 };
 let currentDoc = null;
 
+function docIndex(date) {
+    const currentYear = date.getFullYear();
+    const currentMonth = date.getMonth();
+    return `${currentYear}-${currentMonth}`;
+}
+
 function currentDocs() {
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth();
-    const idx = `${currentYear}-${currentMonth}`;
+    const idx = docIndex(currentDate);
     if (!(idx in docs)) {
         docs[idx] = [];
     }
@@ -158,7 +162,28 @@ function addDoc() {
     rebuildDocs();
 }
 
+function clone() {
+    const prevDate = calcPrevMonth(currentDate);
+    const prevDocs = docs[docIndex(prevDate)];
+    console.log(prevDocs);
+    docs[docIndex(currentDate)] = prevDocs.map(doc => {
+        const copy = JSON.parse(JSON.stringify(doc));
+        copy.unavailable = [];
+        copy.preferred = [];
+        return copy;
+    });
+    console.log(currentDocs());
+    rebuildDocs();
+}
+
 function rebuildDocs() {
+    const cloneButton = document.querySelector("#clone");
+    if (currentDocs().length) {
+        cloneButton.classList.add("hidden");
+    } else {
+        cloneButton.classList.remove("hidden");
+    }
+
     const names = document.querySelector("#docNames");
     names.innerHTML = "";
     for (const doc of currentDocs()) {
