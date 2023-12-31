@@ -281,6 +281,9 @@ function validate(shifts, docs) {
 function createSchedule() {
     markActiveDoc(null);
 
+    const spinner = document.querySelector("#spinner");
+    spinner.classList.remove("hidden");
+
     const days = daysInMonth(currentDate.getMonth(), currentDate.getYear());
     fetch(`cgi-bin/solve-cgi.py?days=${days}`, {
         method: "POST",
@@ -294,6 +297,7 @@ function createSchedule() {
             schedule = data;
             rebuildCalendar(currentDate, data, docs.map(doc => doc["name"]), null);
             validate(schedule, docs);
+            spinner.classList.add("hidden");
         })
 }
 
