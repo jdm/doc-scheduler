@@ -36,6 +36,7 @@ function calcPrevMonth(date) {
 function prevMonth() {
     currentDate = calcPrevMonth(currentDate);
     resetState();
+    rebuildDocs();
     doRebuild();
 }
 
@@ -50,6 +51,7 @@ function nextMonth() {
     }
     currentDate = new Date(year, month, 1);
     resetState();
+    rebuildDocs();
     doRebuild();
 }
 
@@ -86,7 +88,7 @@ function rebuildCalendar(date, shifts, docs, active) {
                 if (active["unavailable"].indexOf(currentDay) !== -1) {
                     day.classList.add("unavailable");
                 }
-            } else if (shifts) {
+            } else if (shifts.length) {
                 const activeId = docs.indexOf(active["name"]);
                 if (shifts[i].indexOf(activeId) !== -1) {
                     day.classList.add("highlight");
@@ -103,36 +105,49 @@ function rebuildCalendar(date, shifts, docs, active) {
     }
 }
 
-let docs = [
-    {
-        "name": "Bowman",
-        "preferred": [
-            1,5,7,9
-        ],
-        "unavailable": [13],
-        "min": 1,
-        "max": 4,
-    },
-    {
-        "name": "McArthur",
-        "preferred": [11,20],
-        "unavailable": [23],
-        "min": 4,
-        "max": 12,
-    },
-    {
-        "name": "AlQaseer",
-        "preferred": [30],
-        "unavailable": [8],
-        "min": 2,
-        "max": 20,
-    }
-];
+let docs = {
+    "2023-11": [
+        {
+            "name": "Bowman",
+            "preferred": [
+                1,5,7,9
+            ],
+            "unavailable": [13],
+            "min": 1,
+            "max": 4,
+        },
+        {
+            "name": "McArthur",
+            "preferred": [11,20],
+            "unavailable": [23],
+            "min": 4,
+            "max": 12,
+        },
+        {
+            "name": "AlQaseer",
+            "preferred": [30],
+            "unavailable": [8],
+            "min": 2,
+            "max": 20,
+        }
+    ]
+};
 let currentDoc = null;
+
+function currentDocs() {
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+    const idx = `${currentYear}-${currentMonth}`;
+    if (!(idx in docs)) {
+        docs[idx] = [];
+    }
+    return docs[idx];
+}
 
 function addDoc() {
     const input = document.querySelector("#docName");
-    docs.push({
+    
+    currentDocs().push({
         "name": input.value,
         "unavailable": [],
         "preferred": [],
@@ -146,16 +161,19 @@ function addDoc() {
 function rebuildDocs() {
     const names = document.querySelector("#docNames");
     names.innerHTML = "";
-    for (const doc of docs) {
+    for (const doc of currentDocs()) {
         const docElem = document.createElement("div");
         docElem.className = "doc";
         docElem.onclick = markActiveDoc;
         const removeElem = document.createElement("button");
         removeElem.textContent = "✗";
-        removeElem.onclick = () => {
-            const idx = docs.indexOf(doc);
-            docs.splice(idx, 1);
-            rebuildDocs();
+        removeElem.onclick = (ev) => {
+            ev.stopPropagation();
+            if (confirm("Are you sure you want to remove this doctor from the schedule?")) {
+                const idx = currentDocs().indexOf(doc);
+                currentDocs().splice(idx, 1);
+                rebuildDocs();
+            }
         };
         docElem.appendChild(removeElem);
         const nameElem = document.createElement("span");
@@ -191,18 +209,19 @@ function updateMinMax(prop, event) {
         i++;
         doc = doc.nextElementSibling;
     }
-    docs[i][prop] = parseInt(event.target.value);
+    currentDocs()[i][prop] = parseInt(event.target.value);
     rebuildDocs();
 }
 
 function markActiveDoc(ev) {
+    const target = ev === null ? null : ev.target.classList.contains("doc") ? ev.target : ev.target.parentNode;
     const names = document.querySelector("#docNames");
     let i = 0;
     let doc = names.querySelector("div");
     const lastCurrent = currentDoc;
     currentDoc = null;
     while (doc) {
-        if (ev !== null && doc === ev.target && lastCurrent != i) {
+        if (doc === target && lastCurrent != i) {
             currentDoc = i;
             doc.classList.add("active");
         } else {
@@ -218,7 +237,7 @@ function markDay(day) {
     if (currentDoc == null || calendarState != INPUT_CONSTRAINTS) {
         return;
     }
-    const doc = docs[currentDoc];
+    const doc = currentDocs()[currentDoc];
     if (doc["preferred"].indexOf(day) !== -1) {
         doc["preferred"] = doc["preferred"].filter(d => d != day);
         doc["unavailable"].push(day);
@@ -241,7 +260,12 @@ function resetState() {
 }
 
 function doRebuild() {
-    rebuildCalendar(currentDate, schedule, docs.map(doc => doc["name"]), currentDoc !== null ? docs[currentDoc] : null);
+    rebuildCalendar(
+        currentDate,
+        schedule,
+        currentDocs().map(doc => doc["name"]),
+        currentDoc !== null ? currentDocs()[currentDoc] : null,
+    );
 }
 
 resetState();
@@ -278,6 +302,9 @@ function validate(shifts, docs) {
     }
 }
 
+function exportSchedule() {
+}
+
 function createSchedule() {
     markActiveDoc(null);
 
@@ -290,14 +317,20 @@ function createSchedule() {
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(docs),
+        body: JSON.stringify(currentDocs()),
     }).then(response => response.json())
         .then(data => {
             calendarState = SHOW_SCHEDULE;
             schedule = data;
-            rebuildCalendar(currentDate, data, docs.map(doc => doc["name"]), null);
-            validate(schedule, docs);
+            rebuildCalendar(currentDate, data, currentDocs().map(doc => doc["name"]), null);
+            validate(schedule, currentDocs());
             spinner.classList.add("hidden");
+            if (!data.length) {
+                document.querySelector("#export").disabled = true;
+                alert("No schedule possible—too many unfilled shifts.");
+            } else {
+                document.querySelector("#export").disabled = false;
+            }
         })
 }
 

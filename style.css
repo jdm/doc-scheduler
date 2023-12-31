@@ -3,7 +3,7 @@ body {font-family: Verdana, sans-serif;}
 
 /* Month header */
 .month {
-  padding: 70px 25px;
+  padding: 2em 1.5em;
   /*width: 100%;*/
   background: #1abc9c;
   text-align: center;
@@ -113,8 +113,6 @@ div.unavailable:hover {
 }
 
 #docs {
-    float: left;
-    width: 18%;
     user-select: none;
 }
 
@@ -143,9 +141,16 @@ div.unavailable:hover {
     color: white;    
 }
 
-#calendar {
-    float: left;
+#calendar-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+#dates {
     width: 82%;
+}
+
+#calendar {
 }
 
 #legend {
@@ -245,4 +250,8 @@ span .preferred, span .unavailable {
 
 .hidden {
     display: none;
+}
+
+#generate {
+    margin-top: 1em;
 }

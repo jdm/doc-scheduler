@@ -2,13 +2,6 @@
 <meta charset="UTF-8">
 <link href="style.css" rel="stylesheet"></link>
 
-<div id="docs">
-  <div id="docNames">
-  </div>
-  <div><input size=7 id="docName"> <button onclick="addDoc()">+</button></div>
-  <div><button onclick="createSchedule()">Generate</button></div>
-</div>
-
 <div id="calendar">
   <div class="month">
     <ul>
@@ -18,18 +11,31 @@
     </ul>
   </div>
 
-  <div class="weekdays">
-    <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
-  </div>
+  <div id="calendar-container">
+    <div id="docs">
+      <div id="docNames">
+      </div>
+      <div><input size=13 id="docName"> <button onclick="addDoc()">+</button></div>
+      <div>
+        <button id="generate" onclick="createSchedule()">Generate</button>
+        <button id="export" disabled onclick="exportSchedule()">Export</button>
+      </div>
+    </div>
 
-  <div class="days" id="days">
-  </div>
+    <div id="dates">
+      <div class="weekdays">
+        <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+      </div>
 
-  <div id="legend">
-    <span><span class="preferred">&nbsp;</span> Preferred</span>
-    <span><span class="unavailable">&nbsp;</span> Unavailable</span>
-  </div>
+      <div class="days" id="days">
+      </div>
 
+      <div id="legend">
+        <span><span class="preferred">&nbsp;</span> Preferred</span>
+        <span><span class="unavailable">&nbsp;</span> Unavailable</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="loading hidden" id="spinner">
