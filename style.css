@@ -114,12 +114,18 @@ div.unavailable:hover {
 
 #docs {
     float: left;
-    width: 15%;
+    width: 18%;
+    user-select: none;
 }
 
 .doc {
     padding: 1em 0;
     padding-left: 0.5em;
+}
+
+.doc button {
+    margin-right: 0.5em;
+    border: 0px;
 }
 
 .doc input {
@@ -139,7 +145,7 @@ div.unavailable:hover {
 
 #calendar {
     float: left;
-    width: 85%;
+    width: 82%;
 }
 
 #legend {

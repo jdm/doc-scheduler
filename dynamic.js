@@ -149,8 +149,18 @@ function rebuildDocs() {
     for (const doc of docs) {
         const docElem = document.createElement("div");
         docElem.className = "doc";
-        docElem.onclick = markActiveDoc; 
-        docElem.textContent = doc["name"];
+        docElem.onclick = markActiveDoc;
+        const removeElem = document.createElement("button");
+        removeElem.textContent = "✗";
+        removeElem.onclick = () => {
+            const idx = docs.indexOf(doc);
+            docs.splice(idx, 1);
+            rebuildDocs();
+        };
+        docElem.appendChild(removeElem);
+        const nameElem = document.createElement("span");
+        nameElem.textContent = doc["name"];
+        docElem.appendChild(nameElem);
         const minElem = document.createElement("input");
         minElem.type = "number";
         minElem.value = doc["min"];
