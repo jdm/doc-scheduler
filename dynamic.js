@@ -280,6 +280,7 @@ let calendarState;
 let schedule;
 
 function resetState() {
+    currentDoc = null;
     calendarState = INPUT_CONSTRAINTS;
     schedule = null;
 }
