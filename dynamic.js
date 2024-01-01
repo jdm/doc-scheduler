@@ -364,12 +364,12 @@ function createSchedule() {
             calendarState = SHOW_SCHEDULE;
             schedule = data;
             rebuildCalendar(currentDate, data, currentDocs().map(doc => doc["name"]), null);
-            validate(schedule, currentDocs());
             spinner.classList.add("hidden");
             if (!data.length) {
                 document.querySelector("#export").disabled = true;
                 alert("No schedule possible—too many unfilled shifts.");
             } else {
+                validate(schedule, currentDocs());
                 document.querySelector("#export").disabled = false;
             }
         })
