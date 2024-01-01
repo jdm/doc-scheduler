@@ -14,7 +14,7 @@ body = sys.stdin.read(int(os.environ["CONTENT_LENGTH"]))
 query = os.environ["QUERY_STRING"]
 pairs = urllib.parse.parse_qs(query)
 inputs = solve.process_inputs(body)
-docs, desired, preferred, unavailable = inputs
+docs, desired, preferred, unavailable, prefer_double = inputs
 num_days = int(pairs["days"][0])
-result = solve.solve_shift_scheduling(docs, desired, preferred, unavailable, solve.MAX_UNFILLED, num_days)
+result = solve.solve_shift_scheduling(docs, desired, preferred, unavailable, prefer_double, solve.MAX_UNFILLED, num_days)
 print(json.dumps(result))

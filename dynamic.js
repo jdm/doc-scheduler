@@ -115,6 +115,7 @@ let docs = {
             "unavailable": [13],
             "min": 1,
             "max": 4,
+            "prefer_double": false,
         },
         {
             "name": "McArthur",
@@ -122,6 +123,7 @@ let docs = {
             "unavailable": [23],
             "min": 4,
             "max": 12,
+            "prefer_double": false,
         },
         {
             "name": "AlQaseer",
@@ -129,6 +131,7 @@ let docs = {
             "unavailable": [8],
             "min": 2,
             "max": 20,
+            "prefer_double": false,
         }
     ]
 };
@@ -216,6 +219,15 @@ function rebuildDocs() {
         maxElem.onchange = (ev) => updateMinMax("max", ev);
         docElem.appendChild(minElem);
         docElem.appendChild(maxElem);
+        const checkElem = document.createElement("input");
+        checkElem.type = "checkbox";
+        checkElem.checked = doc["prefer_double"];
+        checkElem.onchange = (ev) => {
+            const idx = currentDocs().indexOf(doc);
+            currentDocs()[idx]["prefer_double"] = ev.target.checked;
+            rebuildDocs();
+        }
+        docElem.appendChild(checkElem);
         names.appendChild(docElem);
     }
 }
@@ -240,6 +252,9 @@ function updateMinMax(prop, event) {
 
 function markActiveDoc(ev) {
     const target = ev === null ? null : ev.target.classList.contains("doc") ? ev.target : ev.target.parentNode;
+    if (ev !== null && ev.target.nodeName == "INPUT") {
+        return;
+    }
     const names = document.querySelector("#docNames");
     let i = 0;
     let doc = names.querySelector("div");

@@ -244,6 +244,8 @@ def solve_shift_scheduling(
         preferences: dict[str, list[tuple]],
         # doc -> [(day, shift)]
         unavailable: dict[str, list[tuple]],
+        # doc -> [bool]
+        prefer_double_shifts: dict[str, bool],
         max_unfilled: int,
         num_days: int,
 ):
@@ -363,10 +365,13 @@ def solve_shift_scheduling(
     obj_bool_coeffs: list[int] = []
 
     # Exactly one shift per day.
-    # TODO: support preference about multiple shifts
-    for e in range(num_employees - 1):
-        for d in range(num_days):
-            model.AddExactlyOne(work[e, s, d] for s in range(num_shifts))
+    # TODO: support preference about multiple shifts when shifts span a day
+    #for e in range(num_employees - 1):
+    for doc in prefer_double_shifts:
+        e = docs.index(doc)
+        if not prefer_double_shifts[doc]:
+            for d in range(num_days):
+                model.AddExactlyOne(work[e, s, d] for s in range(num_shifts))
 
     # Fixed assignments.
     #for e, s, d in fixed_assignments:
@@ -558,6 +563,7 @@ def process_inputs(contents):
     preferences = {}
     unavailable = {}
     desired = {}
+    prefer_double = {}
     for doc in inputs:
         name = doc["name"]
         docs += [name]
@@ -565,14 +571,15 @@ def process_inputs(contents):
         preferences[name] = sum(map(lambda x: [(x, MORNING), (x, NIGHT)], doc["preferred"]), [])
         unavailable[name] = sum(map(lambda x: [(x, MORNING), (x, NIGHT)], doc["unavailable"]), [])
         desired[name] = (doc["min"], doc["max"])
-    return (docs, desired, preferences, unavailable)
+        prefer_double[name] = doc["prefer_double"]
+    return (docs, desired, preferences, unavailable, prefer_double)
 
 
 def main():
     with open('inputs.json') as f:
         inputs = process_inputs(f.read())
-    docs, desired, preferred, unavailable = inputs
-    solve_shift_scheduling(docs, desired, preferred, unavailable, MAX_UNFILLED, 30)
+    docs, desired, preferred, unavailable, prefer_double = inputs
+    solve_shift_scheduling(docs, desired, preferred, unavailable, prefer_double, MAX_UNFILLED, 30)
 
 
 if __name__ == "__main__":
