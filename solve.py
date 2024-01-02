@@ -329,7 +329,7 @@ def solve_shift_scheduling(
         # Afternoon to night has a penalty of 4.
         #(2, 3, 4),
         # Night to morning is forbidden.
-        #(3, 1, 0),
+        (NIGHT, MORNING, 0),
     ]
 
     # daily demands for work shifts (morning, night) for each day
