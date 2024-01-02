@@ -408,10 +408,11 @@ def solve_shift_scheduling(
         doc = docs[e]
         desired_min, desired_max = desired_total_shifts[doc]
         works = [work[e, shift, d] for d in range(num_days) for shift in range(1, num_shifts)]
-        if e == num_employees - 1:
-            soft_desired_max = desired_min
-        else:
-            soft_desired_max = desired_max
+        #if e == num_employees - 1:
+        soft_desired_max = desired_min
+        cost = 2 if e != num_employees - 1 else 10
+        #else:
+        #    soft_desired_max = desired_max
         variables, coeffs = add_soft_sum_constraint(
             model,
             works,
@@ -421,7 +422,7 @@ def solve_shift_scheduling(
             soft_desired_max, # soft max
             desired_max, # hard max
             #int(desired_max * 1.2), # hard max
-            2, # max cost
+            cost, # max cost
             "monthly_sum_constraint(employee %i)"
             % (e),
         )
