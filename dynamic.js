@@ -160,6 +160,7 @@ function addDoc() {
         "preferred": [],
         "min": 4,
         "max": 8,
+        "prefer_double": false,
     });
     input.value = "";
     rebuildDocs();
