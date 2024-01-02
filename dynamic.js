@@ -106,7 +106,7 @@ function rebuildCalendar(date, shifts, docs, active) {
 }
 
 let docs = {
-    "2023-11": [
+    "2024-0": [
         {
             "name": "Bowman",
             "preferred": [
