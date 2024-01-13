@@ -114,7 +114,7 @@ let docs = {
             ],
             "unavailable": [13],
             "min": 1,
-            "max": 4,
+            "max": 8,
             "prefer_double": false,
         },
         {
@@ -122,7 +122,7 @@ let docs = {
             "preferred": [11,20],
             "unavailable": [23],
             "min": 4,
-            "max": 12,
+            "max": 8,
             "prefer_double": false,
         },
         {
@@ -130,7 +130,39 @@ let docs = {
             "preferred": [30],
             "unavailable": [8],
             "min": 2,
-            "max": 20,
+            "max": 8,
+            "prefer_double": false,
+        },
+        {
+            "name": "Ponessi",
+            "preferred": [],
+            "unavailable": [],
+            "min": 4,
+            "max": 8,
+            "prefer_double": true,
+        },
+        {
+            "name": "Hubbs",
+            "preferred": [],
+            "unavailable": [],
+            "min": 4,
+            "max": 8,
+            "prefer_double": true,
+        },
+        {
+            "name": "Kyle",
+            "preferred": [],
+            "unavailable": [],
+            "min": 4,
+            "max": 8,
+            "prefer_double": false,
+        },
+        {
+            "name": "Curtis",
+            "preferred": [],
+            "unavailable": [],
+            "min": 4,
+            "max": 8,
             "prefer_double": false,
         }
     ]

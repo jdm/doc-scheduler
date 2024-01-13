@@ -87,7 +87,7 @@ def negated_bounded_span(
 def add_soft_sequence_constraint(
     model,
     works,
-        hard_min,
+    hard_min,
     soft_min,
     min_cost,
     soft_max,
@@ -364,14 +364,37 @@ def solve_shift_scheduling(
     obj_bool_vars: list[cp_model.BoolVar] = []
     obj_bool_coeffs: list[int] = []
 
-    # Exactly one shift per day.
-    # TODO: support preference about multiple shifts when shifts span a day
-    #for e in range(num_employees - 1):
+    # Exactly one shift per day unless otherwise specified.
     for doc in prefer_double_shifts:
         e = docs.index(doc)
         if not prefer_double_shifts[doc]:
             for d in range(num_days):
                 model.AddExactlyOne(work[e, s, d] for s in range(num_shifts))
+        else:
+            for d in range(num_days):
+                a = [work[e, MORNING, d], work[e, NIGHT, d].Not()]
+                a_orig = a.copy()
+                b = [work[e, MORNING, d].Not(), work[e, NIGHT, d]]
+                b_orig = b.copy()
+
+                trans_var_a = model.NewBoolVar(
+                     "combined_shift_constraint_a (employee=%i, day=%i)" % (e, d)
+                )
+                trans_var_b = model.NewBoolVar(
+                     "combined_shift_constraint_b (employee=%i, day=%i)" % (e, d)
+                )
+
+                a.append(trans_var_a)
+                b.append(trans_var_b)
+
+                model.AddBoolAnd(a).OnlyEnforceIf(a_orig)
+                model.AddBoolAnd(b).OnlyEnforceIf(b_orig)
+
+                obj_bool_vars.append(trans_var_a)
+                obj_bool_coeffs.append(2)
+
+                obj_bool_vars.append(trans_var_b)
+                obj_bool_coeffs.append(2)
 
     # Fixed assignments.
     #for e, s, d in fixed_assignments:
@@ -387,7 +410,7 @@ def solve_shift_scheduling(
     # Shift constraints
     for ct in shift_constraints:
         shift, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost = ct
-        for e in range(num_employees):
+        for e in range(num_employees - 1):
             works = [work[e, shift, d] for d in range(num_days)]
             variables, coeffs = add_soft_sequence_constraint(
                 model,
@@ -408,11 +431,11 @@ def solve_shift_scheduling(
         doc = docs[e]
         desired_min, desired_max = desired_total_shifts[doc]
         works = [work[e, shift, d] for d in range(num_days) for shift in range(1, num_shifts)]
-        #if e == num_employees - 1:
-        soft_desired_max = desired_min
+        if e == num_employees - 1:
+            soft_desired_max = desired_min
+        else:
+            soft_desired_max = desired_max
         cost = 2 if e != num_employees - 1 else 10
-        #else:
-        #    soft_desired_max = desired_max
         variables, coeffs = add_soft_sum_constraint(
             model,
             works,
@@ -432,7 +455,7 @@ def solve_shift_scheduling(
     # Weekly sum constraints
     for ct in weekly_sum_constraints:
         shift, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost = ct
-        for e in range(num_employees):
+        for e in range(num_employees - 1):
             for w in range(num_weeks):
                 works = [work[e, shift, d + w * 7] for d in range(7)]
                 variables, coeffs = add_soft_sum_constraint(
@@ -452,7 +475,7 @@ def solve_shift_scheduling(
 
     # Penalized transitions
     for previous_shift, next_shift, cost in penalized_transitions:
-        for e in range(num_employees):
+        for e in range(num_employees - 1):
             for d in range(num_days - 1):
                 transition = [
                     work[e, previous_shift, d].Not(),
@@ -475,16 +498,15 @@ def solve_shift_scheduling(
             for d in range(7):
                 if w * 7 + d >= num_days:
                     continue
-                # Ignore unfilled shifts.
                 works = [work[e, s, w * 7 + d] for e in range(num_employees)]
                 # Ignore Off shift.
                 min_demand = weekly_cover_demands[d][s - 1]
-                worked = model.NewIntVar(min_demand, num_employees, "")
+                worked = model.NewIntVar(min_demand, num_employees - 1, "")
                 model.Add(worked == sum(works))
                 over_penalty = excess_cover_penalties[s - 1]
                 if over_penalty > 0:
                     name = "excess_demand(shift=%i, week=%i, day=%i)" % (s, w, d)
-                    excess = model.NewIntVar(0, num_employees - min_demand, name)
+                    excess = model.NewIntVar(0, num_employees - min_demand - 1, name)
                     model.Add(excess == worked - min_demand)
                     obj_int_vars.append(excess)
                     obj_int_coeffs.append(over_penalty)
@@ -502,6 +524,7 @@ def solve_shift_scheduling(
 
     # Solve the model.
     solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = 10
     #if params:
     #    text_format.Parse(params, solver.parameters)
     #solution_printer = cp_model.ObjectiveSolutionPrinter()
@@ -518,17 +541,22 @@ def solve_shift_scheduling(
     # Print solution.
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         sys.stderr.write("\n")
-        header = "          "
         for w in range(num_weeks):
-            header += "M T W T F S S \n"
-        sys.stderr.write(header)
-        for e in range(num_employees):
-            schedule = ""
-            for d in range(num_days):
-                for s in range(num_shifts):
-                    if solver.BooleanValue(work[e, s, d]):
-                        schedule += shifts[s] + " "
-            sys.stderr.write("worker %i: %s\n" % (e, schedule))
+            header = "          "
+            header += "M     T     W     T     F     S     S \n"
+            sys.stderr.write(header)
+            for e in range(num_employees):
+                schedule = ""
+                for d in range(w * 7, (w + 1) * 7):
+                    if d >= num_days:
+                        continue
+                    for s in range(num_shifts):
+                        if solver.BooleanValue(work[e, s, d]):
+                            schedule += shifts[s] + " "
+                        else:
+                            schedule += "  "
+                sys.stderr.write("worker %i: %s\n" % (e, schedule))
+            sys.stderr.write("\n")
         sys.stderr.write("\n")
         sys.stderr.write("Penalties:\n")
         for i, var in enumerate(obj_bool_vars):
